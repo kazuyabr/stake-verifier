@@ -114,18 +114,50 @@ const app = new Vue({
         server_seed: '',
         server_hash: '',
         nonce: null,
-        games: [
-            {name: 'Plinko'},
-            {name: 'Mines'},
-            {name: 'Chartbet'},
-            {name: 'Hilo'},
-            {name: 'Blackjack'},
-            {name: 'Diamond Poker'},
-            {name: 'Roulette'},
-            {name: 'Keno'},
-            {name: 'Baccarat'},
-            {name: 'Dice'}
+        games1: [
+            {
+                name: 'Plinko',
+                img:  'img/plinko.png'
+            },
+            {
+                name: 'Mines',
+                img:  'img/mines.png'
+            },
+            {
+                name: 'Chartbet',
+                img:  'img/chartbet.png'
+            },
+            {
+                name: 'Hilo',
+                img:  'img/hilo.png'
+            },
+            {
+                name: 'Blackjack',
+                img:  'img/blackjack.png'
+            }            
         ],
+        games2: [            
+            {
+                name: 'Diamond Poker',
+                img:  'img/diamondpoker.png'
+            },
+            {
+                name: 'Roulette',
+                img:  'img/roulette.png'
+            },
+            {
+                name: 'Keno',
+                img:  'img/keno.png'
+            },
+            {
+                name: 'Baccarat',
+                img:  'img/baccarat.png'
+            },
+            {
+                name: 'Dice',
+                img:  'img/dice.png'
+            }
+        ],       
         numMines: 1,
         active_game: '',
         MAX_ROLL: 10001,

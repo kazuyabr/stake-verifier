@@ -1,155 +1,228 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Stake.com Verifier</title>
-        <link rel="stylesheet" href="styles.css">
-    </head>
-    <body>
+<!DOCTYPE HTML> 
+<!--
+	Read Only by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+--> 
+<html> 
+    <head> 
+        <title>Stake Verifier</title>         
+        <meta charset="utf-8" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1" /> 
+        <!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->         
+		<link rel="stylesheet" href="assets/css/main.css" /> 
+		<link rel="stylesheet" href="assets/css/output.css" /> 
+		<link rel="stylesheet" href="assets/css/bootstrap.css" /> 
+		<link rel="stylesheet" href="assets/css/bootstrap.min.css" /> 
+        <!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->         
+    </head>     
+    <body> 
         <div id="app">
-            <h1><a class="title-button" href="https://stake.com/?code=stakeverifier">Stake.com</a> Verifier</h1>
-            <div id="input" class="center-box">
-                <h2>Input</h2>
-                <input type="text" v-model="client_seed" placeholder="Client Seed">
-                <input type="text" v-model="server_seed" placeholder="Server Seed">
-                <input type="text" v-model="server_hash" placeholder="Server Seed Hash">
-                <input type="number" v-model="nonce" placeholder="Nonce">
-                <input v-if="active_game === 'Mines'" type="number" v-model="numMines" min="1" max="24" placeholder="Number of Mines">
-                <h3>Game</h3>
-                <div id="games">
-                    <span class="game" v-for="game in games" v-on:click="active_game = game.name" v-bind:class="{active: active_game === game.name}">{{game.name.replace(' ','&nbsp;')}}</span>
-                </div>
-            </div>
-            <div id="output" class="center-box">
-                <h2>Output</h2>
-                <pre v-if="server_seed">{{`sha256(server_seed): ${sha256(server_seed)}`}}</pre>
-                <pre v-if="server_seed && server_hash">Server seed matches provided hash: <span v-bind:result="seed_hash_match() || 'false'">{{seed_hash_match()}}</span></pre>
-                <pre v-if="all_info()">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:0`}}</pre>
-                <pre v-if="all_info() && ['Plinko','Mines','Diamond Poker','Keno', 'Hilo','Blackjack'].indexOf(active_game)>=0">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:1`}}</pre>
-                <pre v-if="all_info() && ['Plinko','Mines', 'Hilo','Blackjack'].indexOf(active_game)>=0">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:2`}}</pre>
-                <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:3`}}</pre>
-                <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:4`}}</pre>
-                <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:5`}}</pre>
-                <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:6`}}</pre>
-                <pre v-if="all_info()">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:0`)}`}}</pre>
-                <pre v-if="all_info() && ['Plinko','Mines','Diamond Poker','Keno','Hilo','Blackjack'].indexOf(active_game)>=0">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:1`)}`}}</pre>
-                <pre v-if="all_info() && ['Plinko','Mines','Hilo','Blackjack'].indexOf(active_game)>=0">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:2`)}`}}</pre>
-                <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:3`)}`}}</pre>
-                <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:4`)}`}}</pre>
-                <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:5`)}`}}</pre>
-                <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:6`)}`}}</pre>
-                
-                <div v-if="(active_game === 'Dice' || active_game === 'Roulette' || active_game === 'Chartbet') && all_info()">
-                    <h4>First four bytes</h4>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(8))" v-bind:dec="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></hexdectable>
-                    <h4>Bytes to Number</h4>
-                    <numcalc v-bind:bytes="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></numcalc>
-                    <pre v-if="active_game === 'Dice'">{{`Math.floor(${bytes_to_number(bytes(8))} * ${MAX_ROLL}) / 100 = ${result(active_game)}`}}</pre>
-                    <pre v-if="active_game === 'Roulette'">{{`Math.floor(${bytes_to_number(bytes(8))} * ${MAX_ROULETTE}) = ${result(active_game)}`}}</pre>
-                    <pre v-if="active_game === 'Chartbet'">{{`${MAX_CHARTBET} / (Math.floor(${bytes_to_number(bytes(8))} * ${MAX_CHARTBET}) + 1) * 0.98 = ${result(active_game)}`}}</pre>
-                    <pre v-if="active_game === 'Chartbet'">{{`Final result: ${result(active_game).toFixed(2)+'x'}`}}</pre>
-                    <pre v-else>{{`Final result: ${result(active_game)}`}}</pre>
-                </div>
-
-                <div v-if="(active_game === 'Plinko') && all_info()">
-                    <h4>Convert each set of four bytes into a number</h4>
-                    <p><i>Note: 20 "directions" will be displayed but only the amount corresponding to the amount of pins is used</i></p>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(64))" v-bind:dec="bytes_to_hex_array(bytes(64)).map(leading_zeroes)"></hexdectable>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(128, 64))" v-bind:dec="bytes_to_hex_array(bytes(128, 64)).map(leading_zeroes)"></hexdectable>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(160, 32))" v-bind:dec="bytes_to_hex_array(bytes(160, 32)).map(leading_zeroes)"></hexdectable>
-                    <p>Each set of 4 bytes is turned into a number in the range <code>[0, 1)</code>. Only the first calculation is displayed for conciceness.</p>
-                    <numcalc v-bind:bytes="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></numcalc>
-                    <table>
-                        <tr>
-                            <td><strong>Pin #</strong></td><td><strong>Number</strong></td><td><strong>Number * 2</strong></td><td><strong>Direction</strong></td>
-                        </tr>
-                        <tr v-for="(num, i) in bytes_to_num_array(bytes(160))">
-                            <td>{{i+1}}</td><td>{{num}}</td><td>{{num*2}}</td><td>{{Math.floor(num*2)?'right':'left'}}</td>
-                        </tr>
-                    </table>
-                </div>
-
-                <div v-if="(active_game === 'Baccarat') && all_info()">
-                    <h4>Convert each set of four bytes into a number</h4>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(48))" v-bind:dec="bytes_to_hex_array(bytes(48)).map(leading_zeroes)"></hexdectable>
-                    <p>Each set of 4 bytes is turned into a number in the range <code>[0, 1)</code>. Only the first calculation is displayed for conciceness.</p>
-                    <numcalc v-bind:bytes="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></numcalc>
-                    <table>
-                        <tr>
-                            <td><strong>Card #</strong></td><td><strong>Number</strong></td><td><strong>Number * 52</strong></td><td><strong>Card</strong></td>
-                        </tr>
-                        <tr v-for="(num, i) in bytes_to_num_array(bytes(48))">
-                            <td>{{i+1}}</td><td>{{num}}</td><td>{{num*52}}</td><td v-html="nums_to_card_array(bytes_to_num_array(bytes(48)))[i]"></td>
-                        </tr>
-                    </table>
-                </div>
-
-                <div v-if="(['Hilo','Blackjack'].indexOf(active_game) >= 0) && all_info()">
-                    <h4>Convert each set of four bytes into a number</h4>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(64))" v-bind:dec="bytes_to_hex_array(bytes(64)).map(leading_zeroes)"></hexdectable>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(128, 64))" v-bind:dec="bytes_to_hex_array(bytes(128, 64)).map(leading_zeroes)"></hexdectable>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(192, 64))" v-bind:dec="bytes_to_hex_array(bytes(192, 64)).map(leading_zeroes)"></hexdectable>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(256, 64))" v-bind:dec="bytes_to_hex_array(bytes(256, 64)).map(leading_zeroes)"></hexdectable>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(320, 64))" v-bind:dec="bytes_to_hex_array(bytes(320, 64)).map(leading_zeroes)"></hexdectable>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(384, 64))" v-bind:dec="bytes_to_hex_array(bytes(384, 64)).map(leading_zeroes)"></hexdectable>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(448, 64))" v-bind:dec="bytes_to_hex_array(bytes(448, 64)).map(leading_zeroes)"></hexdectable>
-                    <p>Each set of 4 bytes is turned into a number in the range <code>[0, 1)</code>. Only the first calculation is displayed for conciceness.</p>
-                    <numcalc v-bind:bytes="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></numcalc>
-                    <table>
-                        <tr>
-                            <td><strong>Card #</strong></td><td><strong>Number</strong></td><td><strong>Number * 52</strong></td><td><strong>Card</strong></td>
-                        </tr>
-                        <tr v-for="(num, i) in bytes_to_num_array(bytes(448))">
-                            <td>{{i+1}}</td><td>{{num}}</td><td>{{num*52}}</td><td v-html="nums_to_card_array(bytes_to_num_array(bytes(448)))[i]"></td>
-                        </tr>
-                    </table>
-                </div>
-
-                <div v-if="all_info() && active_game === 'Mines'">
-                    <h4>Convert each set of four bytes into a number</h4>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(64))" v-bind:dec="bytes_to_hex_array(bytes(64)).map(leading_zeroes)"></hexdectable>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(128, 64))" v-bind:dec="bytes_to_hex_array(bytes(128, 64)).map(leading_zeroes)"></hexdectable>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(192, 64))" v-bind:dec="bytes_to_hex_array(bytes(192, 64)).map(leading_zeroes)"></hexdectable>
-                    <p>Each set of 4 bytes is turned into a number in the range <code>[0, 1)</code>. Only the first calculation is displayed for conciceness.</p>
-                    <numcalc v-bind:bytes="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></numcalc>
-                    <shuffle-table v-bind:nums="bytes_to_num_array(bytes(192))" v-bind:pick="numMines" total="25"></shuffle-table>
-                    <p>Each item in the Result column above represents the one-indexed position of a mine going from left to right, top to bottom</p>
-                    <minefield v-bind:mines="result('Mines').slice(0,numMines)"></minefield>
-                </div>
-
-                <div v-if="all_info() && active_game === 'Diamond Poker'">
-                    <h4>Convert each set of four bytes into a number</h4>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(64))" v-bind:dec="bytes_to_hex_array(bytes(64)).map(leading_zeroes)"></hexdectable>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(80, 16))" v-bind:dec="bytes_to_hex_array(bytes(80, 16)).map(leading_zeroes)"></hexdectable>
-                    <p>Each set of 4 bytes is turned into a number in the range <code>[0, 1)</code>. Only the first calculation is displayed for conciceness.</p>
-                    <numcalc v-bind:bytes="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></numcalc>
-                    <table>
-                        <tr>
-                            <td><strong>Side</strong></td><td><strong>Number</strong></td><td><strong>Number * 7</strong></td><td><strong>Color</strong></td>
-                        </tr>
-                        <tr v-for="(num, i) in bytes_to_num_array(bytes(80))">
-                            <td>{{i<5?'Dealer':'Player'}}</td><td>{{num}}</td><td>{{num*7}}</td><td>{{['Green','Purple','Yellow','Red','Cyan','Orange','Blue'][Math.floor(num*7)]}}</td>
-                        </tr>
-                    </table>
-                    <diamond-poker v-bind:diamonds="bytes_to_num_array(bytes(80)).map((x)=>{return Math.floor(x*7)})"></diamond-poker>
-                </div>
-
-                <div v-if="all_info() && active_game === 'Keno'">
-                    <h4>Convert each set of four bytes into a number</h4>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(64))" v-bind:dec="bytes_to_hex_array(bytes(64)).map(leading_zeroes)"></hexdectable>
-                    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(80, 16))" v-bind:dec="bytes_to_hex_array(bytes(80, 16)).map(leading_zeroes)"></hexdectable>
-                    <p>Each set of 4 bytes is turned into a number in the range <code>[0, 1)</code>. Only the first calculation is displayed for conciceness.</p>
-                    <numcalc v-bind:bytes="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></numcalc>
-                    <shuffle-table v-bind:nums="bytes_to_num_array(bytes(160))" pick="10" total="40"></shuffle-table>
-                    <p>Each item in the Result column represents the one-indexed position of a Keno pick going from left to right, top to bottom</p>
-                    <keno v-bind:tiles="result('Keno')"></keno>
-                </div>
-            </div>
-            <p><a href="https://github.com/RGBKey/stake-verifier">GitHub Source</a> &bull; Donations: <a href="bitcoin:146LimMTUjTsZhVnfKEqYBtUDfHVqinxH6?label=Stake%20Verifier%20Donation">146LimMTUjTsZhVnfKEqYBtUDfHVqinxH6</a></p>
-            <p>This project uses the third-party libraries <a href="https://vuejs.org/">Vue.js</a> and <a href="https://github.com/digitalbazaar/forge">Forge</a></p>
+            <!-- Header -->             
+            <section id="header"> 
+                <header> 
+                    <span class="image avatar"><img src="img/logo.svg" alt="" /></span> 
+                    <h2>Input</h2>
+                    <input type="text" v-model="client_seed" placeholder="Client Seed">
+                    <input type="text" v-model="server_seed" placeholder="Server Seed">
+                    <input type="text" v-model="server_hash" placeholder="Server Seed Hash">
+                    <input type="number" v-model="nonce" placeholder="Nonce">
+                    <input v-if="active_game === 'Mines'" type="number" v-model="numMines" min="1" max="24" placeholder="Number of Mines">
+                    <div id="games">
+                        <h3>Game</h3>
+                        <table class="gameTable">
+                            <tr>
+                                <td>
+                                    <span class="game" v-for="game in games1" v-on:click="active_game = game.name" v-bind:class="{active: active_game === game.name}"><img class="logoGames" v-bind:src="game.img" v-bind:alt="game.name"><p>{{game.name.replace(' ','&nbsp;')}}</p></span>
+                                </td>
+                                <td>
+                                    <span class="game" v-for="game in games2" v-on:click="active_game = game.name" v-bind:class="{active: active_game === game.name}"><img class="logoGames" v-bind:src="game.img" v-bind:alt="game.name"><p>{{game.name.replace(' ','&nbsp;')}}</p></span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </header>                                                  
+            </section>             
+            <!-- Wrapper -->             
+            <div id="wrapper"> 
+                <!-- Main -->                 
+                <div id="main">
+                    <div align="center" class="container">
+						<div class="row">
+							<div class="col-md-12">
+                        <h2>Output</h2>
+                        <pre v-if="server_seed">{{`sha256(server_seed): ${sha256(server_seed)}`}}</pre>
+                        <pre v-if="server_seed && server_hash">Server seed matches provided hash: <span v-bind:result="seed_hash_match() || 'false'">{{seed_hash_match()}}</span></pre>
+                        <pre v-if="all_info()">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:0`}}</pre>
+                        <pre v-if="all_info() && ['Plinko','Mines','Diamond Poker','Keno', 'Hilo','Blackjack'].indexOf(active_game)>=0">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:1`}}</pre>
+                        <pre v-if="all_info() && ['Plinko','Mines', 'Hilo','Blackjack'].indexOf(active_game)>=0">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:2`}}</pre>
+                        <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:3`}}</pre>
+                        <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:4`}}</pre>
+                        <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:5`}}</pre>
+                        <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:6`}}</pre>
+                        <pre v-if="all_info()">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:0`)}`}}</pre>
+                        <pre v-if="all_info() && ['Plinko','Mines','Diamond Poker','Keno','Hilo','Blackjack'].indexOf(active_game)>=0">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:1`)}`}}</pre>
+                        <pre v-if="all_info() && ['Plinko','Mines','Hilo','Blackjack'].indexOf(active_game)>=0">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:2`)}`}}</pre>
+                        <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:3`)}`}}</pre>
+                        <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:4`)}`}}</pre>
+                        <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:5`)}`}}</pre>
+                        <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:6`)}`}}</pre>
+                        <div v-if="(active_game === 'Dice' || active_game === 'Roulette' || active_game === 'Chartbet') && all_info()">
+                            <h4>First four bytes</h4>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(8))" v-bind:dec="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></hexdectable>
+                            <h4>Bytes to Number</h4>
+                            <numcalc v-bind:bytes="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></numcalc>
+                            <pre v-if="active_game === 'Dice'">{{`Math.floor(${bytes_to_number(bytes(8))} * ${MAX_ROLL}) / 100 = ${result(active_game)}`}}</pre>
+                            <pre v-if="active_game === 'Roulette'">{{`Math.floor(${bytes_to_number(bytes(8))} * ${MAX_ROULETTE}) = ${result(active_game)}`}}</pre>
+                            <pre v-if="active_game === 'Chartbet'">{{`${MAX_CHARTBET} / (Math.floor(${bytes_to_number(bytes(8))} * ${MAX_CHARTBET}) + 1) * 0.98 = ${result(active_game)}`}}</pre>
+                            <pre v-if="active_game === 'Chartbet'">{{`Final result: ${result(active_game).toFixed(2)+'x'}`}}</pre>
+                            <pre v-else>{{`Final result: ${result(active_game)}`}}</pre>
+                        </div>
+                        <div v-if="(active_game === 'Plinko') && all_info()">
+                            <h4>Convert each set of four bytes into a number</h4>
+                            <p><i>Note: 20 "directions" will be displayed but only the amount corresponding to the amount of pins is used</i></p>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(64))" v-bind:dec="bytes_to_hex_array(bytes(64)).map(leading_zeroes)"></hexdectable>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(128, 64))" v-bind:dec="bytes_to_hex_array(bytes(128, 64)).map(leading_zeroes)"></hexdectable>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(160, 32))" v-bind:dec="bytes_to_hex_array(bytes(160, 32)).map(leading_zeroes)"></hexdectable>
+                            <p>Each set of 4 bytes is turned into a number in the range <code>[0, 1)</code>. Only the first calculation is displayed for conciceness.</p>
+                            <numcalc v-bind:bytes="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></numcalc>
+                            <table>
+                                <tr>
+                                    <td><strong>Pin #3</strong></td>
+                                    <td><strong>Number</strong></td>
+                                    <td><strong>Number * 2</strong></td>
+                                    <td><strong>Direction</strong></td>
+                                </tr>
+                                <tr v-for="(num, i) in bytes_to_num_array(bytes(160))">
+                                    <td>{{i+1}}</td>
+                                    <td>{{num}}</td>
+                                    <td>{{num*2}}</td>
+                                    <td>{{Math.floor(num*2)?'right':'left'}}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div v-if="(active_game === 'Baccarat') && all_info()">
+                            <h4>Convert each set of four bytes into a number</h4>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(48))" v-bind:dec="bytes_to_hex_array(bytes(48)).map(leading_zeroes)"></hexdectable>
+                            <p>Each set of 4 bytes is turned into a number in the range <code>[0, 1)</code>. Only the first calculation is displayed for conciceness.</p>
+                            <numcalc v-bind:bytes="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></numcalc>
+                            <table>
+                                <tr>
+                                    <td><strong>Card #</strong></td>
+                                    <td><strong>Number</strong></td>
+                                    <td><strong>Number * 52</strong></td>
+                                    <td><strong>Card</strong></td>
+                                </tr>
+                                <tr v-for="(num, i) in bytes_to_num_array(bytes(48))">
+                                    <td>{{i+1}}</td>
+                                    <td>{{num}}</td>
+                                    <td>{{num*52}}</td>
+                                    <td v-html="nums_to_card_array(bytes_to_num_array(bytes(48)))[i]"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div v-if="(['Hilo','Blackjack'].indexOf(active_game) >= 0) && all_info()">
+                            <h4>Convert each set of four bytes into a number</h4>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(64))" v-bind:dec="bytes_to_hex_array(bytes(64)).map(leading_zeroes)"></hexdectable>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(128, 64))" v-bind:dec="bytes_to_hex_array(bytes(128, 64)).map(leading_zeroes)"></hexdectable>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(192, 64))" v-bind:dec="bytes_to_hex_array(bytes(192, 64)).map(leading_zeroes)"></hexdectable>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(256, 64))" v-bind:dec="bytes_to_hex_array(bytes(256, 64)).map(leading_zeroes)"></hexdectable>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(320, 64))" v-bind:dec="bytes_to_hex_array(bytes(320, 64)).map(leading_zeroes)"></hexdectable>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(384, 64))" v-bind:dec="bytes_to_hex_array(bytes(384, 64)).map(leading_zeroes)"></hexdectable>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(448, 64))" v-bind:dec="bytes_to_hex_array(bytes(448, 64)).map(leading_zeroes)"></hexdectable>
+                            <p>Each set of 4 bytes is turned into a number in the range <code>[0, 1)</code>. Only the first calculation is displayed for conciceness.</p>
+                            <numcalc v-bind:bytes="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></numcalc>
+                            <table>
+                                <tr>
+                                    <td><strong>Card #</strong></td>
+                                    <td><strong>Number</strong></td>
+                                    <td><strong>Number * 52</strong></td>
+                                    <td><strong>Card</strong></td>
+                                </tr>
+                                <tr v-for="(num, i) in bytes_to_num_array(bytes(448))">
+                                    <td>{{i+1}}</td>
+                                    <td>{{num}}</td>
+                                    <td>{{num*52}}</td>
+                                    <td v-html="nums_to_card_array(bytes_to_num_array(bytes(448)))[i]"></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div v-if="all_info() && active_game === 'Mines'">
+							<h4>Convert each set of four bytes into a number</h4>
+						    <hexdectable v-bind:hex="bytes_to_hex_array(bytes(64))" v-bind:dec="bytes_to_hex_array(bytes(64)).map(leading_zeroes)"></hexdectable>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(128, 64))" v-bind:dec="bytes_to_hex_array(bytes(128, 64)).map(leading_zeroes)"></hexdectable>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(192, 64))" v-bind:dec="bytes_to_hex_array(bytes(192, 64)).map(leading_zeroes)"></hexdectable>
+                            <p>Each set of 4 bytes is turned into a number in the range <code>[0, 1)</code>. Only the first calculation is displayed for conciceness.</p>
+                            <numcalc v-bind:bytes="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></numcalc>
+                            <shuffle-table v-bind:nums="bytes_to_num_array(bytes(192))" v-bind:pick="numMines" total="25"></shuffle-table>
+                            <p>Each item in the Result column above represents the one-indexed position of a mine going from left to right, top to bottom</p>
+                            <minefield v-bind:mines="result('Mines').slice(0,numMines)"></minefield>
+                        </div>
+                        <div v-if="all_info() && active_game === 'Diamond Poker'">
+                            <h4>Convert each set of four bytes into a number</h4>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(64))" v-bind:dec="bytes_to_hex_array(bytes(64)).map(leading_zeroes)"></hexdectable>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(80, 16))" v-bind:dec="bytes_to_hex_array(bytes(80, 16)).map(leading_zeroes)"></hexdectable>
+                            <p>Each set of 4 bytes is turned into a number in the range <code>[0, 1)</code>. Only the first calculation is displayed for conciceness.</p>
+                            <numcalc v-bind:bytes="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></numcalc>
+                            <table>
+                                <tr>
+                                    <td><strong>Side</strong></td>
+                                    <td><strong>Number</strong></td>
+                                    <td><strong>Number * 7</strong></td>
+                                    <td><strong>Color</strong></td>
+                                </tr>
+                                <tr v-for="(num, i) in bytes_to_num_array(bytes(80))">
+                                    <td>{{i
+                                        <5? 'dealer':'player'}}< td>
+                                            <td>{{num}}</td>
+                                            <td>{{num*7}}</td>
+                                            <td>{{['Green','Purple','Yellow','Red','Cyan','Orange','Blue'][Math.floor(num*7)]}}</td>
+                                </tr>
+                            </table>
+                            <diamond-poker v-bind:diamonds="bytes_to_num_array(bytes(80)).map((x)=>{return Math.floor(x*7)})"></diamond-poker>
+                        </div>
+                        <div v-if="all_info() && active_game === 'Keno'">
+                            <h4>Convert each set of four bytes into a number</h4>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(64))" v-bind:dec="bytes_to_hex_array(bytes(64)).map(leading_zeroes)"></hexdectable>
+                            <hexdectable v-bind:hex="bytes_to_hex_array(bytes(80, 16))" v-bind:dec="bytes_to_hex_array(bytes(80, 16)).map(leading_zeroes)"></hexdectable>
+                            <p>Each set of 4 bytes is turned into a number in the range <code>[0, 1)</code>. Only the first calculation is displayed for conciceness.</p>
+                            <numcalc v-bind:bytes="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></numcalc>
+                            <shuffle-table v-bind:nums="bytes_to_num_array(bytes(160))" pick="10" total="40"></shuffle-table>
+                            <p>Each item in the Result column represents the one-indexed position of a Keno pick going from left to right, top to bottom</p>
+                            <keno v-bind:tiles="result('Keno')"></keno>
+                        </div>
+					</div>                  
+				</div>
+				</div>
+				</div>                 
+                <!-- Footer -->                 
+                <section id="footer"> 
+                    <div class="container"> 
+                        <ul class="copyright"> 
+								<p align="center"><a href="https://github.com/RGBKey/stake-verifier">GitHub Source</a> &bull; 
+									Donations: <br>
+									Back-end -> <a href="bitcoin:146LimMTUjTsZhVnfKEqYBtUDfHVqinxH6?label=Stake%20Verifier%20Donation">146LimMTUjTsZhVnfKEqYBtUDfHVqinxH6</a><br>
+									Front-end -> <a href="bitcoin:1QH6V8BrN5HWBsnirToVkU9eu5HHX1V1nr?label=Stake%20Verifier%20Donation">1QH6V8BrN5HWBsnirToVkU9eu5HHX1V1nr</a>
+								</p>   
+								<p>This project uses the third-party libraries <a href="https://vuejs.org/">Vue.js</a> and <a href="https://github.com/digitalbazaar/forge">Forge</a></p>                      
+                        </ul>                         
+                    </div>                     
+                </section>                 
+            </div>             
         </div>
-        <script src="https://unpkg.com/node-forge@0.7.0/dist/forge.min.js"></script>
-        <script src="https://unpkg.com/vue@2.4.2"></script>
-        <script src="https://unpkg.com/vue-router@2.0.0/dist/vue-router.js"></script>
-        <script src="main.js"></script>
-    </body>
+        <!-- Scripts -->         
+        <script src="assets/js/jquery.min.js"></script>         
+        <script src="assets/js/jquery.scrollzer.min.js"></script>         
+        <script src="assets/js/jquery.scrolly.min.js"></script>         
+        <script src="assets/js/skel.min.js"></script>         
+        <script src="assets/js/util.js"></script>         
+        <!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->         
+        <script src="assets/js/main.js"></script>         
+        <script src="assets/js/forge.min.js"></script>
+        <script src="assets/js/vue.js"></script>
+        <script src="assets/js/vue-router.js"></script>
+		<script src="assets/js/verifier.js"></script>
+		<script src="assets/js/bootstrap.js"></script>
+		<script src="assets/js/bootstrap.min.js"></script>
+    </body>     
 </html>
