@@ -50,10 +50,44 @@
                     <div align="center" class="container">
 						<div class="row">
 							<div class="col-md-12">
-                        <h2>Output</h2>
+                        <h1>Output</h1>                                                                                                                                                                            
                         <pre v-if="server_seed">{{`sha256(server_seed): ${sha256(server_seed)}`}}</pre>
                         <pre v-if="server_seed && server_hash">Server seed matches provided hash: <span v-bind:result="seed_hash_match() || 'false'">{{seed_hash_match()}}</span></pre>
                         <pre v-if="all_info()">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:0`}}</pre>
+                        <div v-if="(active_game === '')">
+                                <h3>Choose a game to continue...</h3>
+                           </div>
+                           <div v-if="(active_game === 'Plinko')">
+                                <img src="img/plinko.png" alt=""><h3>PLINKO</h3>
+                           </div>
+                           <div v-if="(active_game === 'Diamond Poker')">
+                                <img src="img/diamondpoker.png" alt=""><h3>DIAMOND POKER</h3>
+                           </div>
+                           <div v-if="(active_game === 'Mines')">
+                                <img src="img/mines.png" alt=""><h3>MINES</h3>
+                           </div>
+                           <div v-if="(active_game === 'Roulette')">
+                               <img src="img/roulette.png" alt=""><h3>Roulette</h3>
+                           </div>
+                           <div v-if="(active_game === 'Chartbet')">
+                               <img src="img/chartbet.png" alt=""><h3>Chartbet</h3>
+                           </div>
+                           <div v-if="(active_game === 'Keno')">
+                               <img src="img/keno.png" alt=""><h3>Keno</h3>
+                           </div>
+                           <div v-if="(active_game === 'Hilo')">
+                               <img src="img/hilo.png" alt=""><h3>Hilo</h3>
+                           </div>
+                           <div v-if="(active_game === 'Baccarat')">
+                               <img src="img/baccarat.png" alt=""><h3>Baccarat</h3>
+                           </div>
+                           <div v-if="(active_game === 'Blackjack')">
+                               <img src="img/blackjack.png" alt=""><h3>Blackjack</h3>
+                           </div>
+                           <div v-if="(active_game === 'Dice')">
+                               <img src="img/dice.png" alt=""><h3>Dice</h3>
+                           </div>
+                            
                         <pre v-if="all_info() && ['Plinko','Mines','Diamond Poker','Keno', 'Hilo','Blackjack'].indexOf(active_game)>=0">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:1`}}</pre>
                         <pre v-if="all_info() && ['Plinko','Mines', 'Hilo','Blackjack'].indexOf(active_game)>=0">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:2`}}</pre>
                         <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`(client_seed:nonce:round): ${client_seed}:${nonce||0}:3`}}</pre>
@@ -67,6 +101,7 @@
                         <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:4`)}`}}</pre>
                         <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:5`)}`}}</pre>
                         <pre v-if="all_info() && ['Hilo','Blackjack'].indexOf(active_game)>=0">{{`hmac_sha256(server_seed, client_seed:nonce:round): ${hmac_sha256(server_seed, `${client_seed}:${nonce||0}:6`)}`}}</pre>
+                      
                         <div v-if="(active_game === 'Dice' || active_game === 'Roulette' || active_game === 'Chartbet') && all_info()">
                             <h4>First four bytes</h4>
                             <hexdectable v-bind:hex="bytes_to_hex_array(bytes(8))" v-bind:dec="bytes_to_hex_array(bytes(8)).map(function(x){return parseInt(x,16)})"></hexdectable>
